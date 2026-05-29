@@ -5,7 +5,7 @@ from torchvision.models import efficientnet_b0, EfficientNet_B0_Weights
 class IdemiaLoss(nn.Module):
     def __init__(self):
         super().__init__()
-        self.eps = 1e-8 
+        self.eps = 1e-6 
 
     def forward(self, preds, targets, genders):
         preds = preds.view(-1)
@@ -33,14 +33,17 @@ class Modele(nn.Module):
         self.feature_dim = self.backbone.classifier[1].in_features
         self.backbone.classifier = nn.Identity()
         self.max_blocks = len(self.backbone.features)
+        
         if freeze:
             for param in self.backbone.parameters():
                 param.requires_grad = False
+                
         self.fc = nn.Sequential(
             nn.Dropout(do),
-            nn.Linear(self.feature_dim, 1),
-            nn.Sigmoid()
+            nn.Linear(self.feature_dim, 1)
+            # ⚠️ On a retiré nn.Sigmoid() d'ici !
         )
+        
         if pretrained is not None:
             checkpoint = torch.load(pretrained)
             if 'model_state_dict' in checkpoint:
@@ -50,7 +53,11 @@ class Modele(nn.Module):
 
     def forward(self, x):
         features = self.backbone(x)
-        out = self.fc(features)
+        logits = self.fc(features)
+        # On applique la Sigmoid manuellement
+        out = torch.sigmoid(logits)
+        # On empêche la sortie de toucher exactement 0.0 ou 1.0
+        out = torch.clamp(out, min=1e-6, max=1.0 - 1e-6)
         return out
     
     def unfreeze_blocks(self, num_blocks):

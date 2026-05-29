@@ -109,8 +109,8 @@ def get_train_val_loaders(image_perturbations):
         shuffle=False,
         num_workers=NUM_WORKERS,
         pin_memory=True,
-        persistent_workers=True,
-        prefetch_factor=2
+        persistent_workers=(NUM_WORKERS > 0),
+        prefetch_factor=2 if NUM_WORKERS > 0 else None
     )
     val_loader = DataLoader(
         val_dataset,
@@ -119,8 +119,8 @@ def get_train_val_loaders(image_perturbations):
         shuffle=False,
         num_workers=NUM_WORKERS_VAL,
         pin_memory=True,
-        persistent_workers=True,
-        prefetch_factor=2
+        persistent_workers=(NUM_WORKERS_VAL > 0),
+        prefetch_factor=2 if NUM_WORKERS_VAL > 0 else None
     )
     t_trans, v_trans = (gpu_transforms["train"], gpu_transforms["val"]) if ON_GPU_TRANSFORM else (None, None)
     print("Nombre de batchs en entraînement :", len(train_loader))
@@ -137,8 +137,8 @@ def get_test_loader():
         shuffle=False,
         num_workers=NUM_WORKERS_VAL,
         pin_memory=True,
-        persistent_workers=True,
-        prefetch_factor=2
+        persistent_workers=(NUM_WORKERS_VAL > 0),
+        prefetch_factor=2 if NUM_WORKERS_VAL > 0 else None
     )
     t_trans = gpu_transforms["test"] if ON_GPU_TRANSFORM else None
     print("Nombre de batchs en test :", len(test_loader))
