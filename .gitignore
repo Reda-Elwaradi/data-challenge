@@ -1,1 +1,8 @@
-images/
+__pycache__/
+.venv/
+.vscode/
+images/*
+saved_models/*
+saved_evals/*
+runs/*
+config.py
