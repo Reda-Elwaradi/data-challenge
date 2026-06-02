@@ -71,11 +71,15 @@ class CustomDataset(Dataset):
             )
             self.transform = None if ON_GPU_TRANSFORM else cpus_transforms["train"]
             print(f"Dataset de train : Total : {len(data)} images.")
+        elif split == 'val':
+            self.sampler = None
+            self.transform = None if ON_GPU_TRANSFORM else cpus_transforms['val']
+            self.labels = data['FaceOcclusion'].tolist()
+            self.genders = data['gender'].tolist()
+            print(f"Dataset de val : Total : {len(data)} images.")
         else:
             self.sampler = None
             self.transform = None if ON_GPU_TRANSFORM else cpus_transforms[split]
-            self.labels = None
-            self.genders = None
             print(f"Dataset de {split} : Total : {len(data)} images.")
 
         self.img_dir = IMAGE_PATH
