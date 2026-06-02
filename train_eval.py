@@ -1,6 +1,5 @@
 import gc
 import torch
-import torch.nn as nn
 from tqdm import tqdm
 import optuna
 from config import *
@@ -53,7 +52,10 @@ def train(model, model_retrieve_path, train_loader, val_loader, max_epochs, epoc
         with tqdm(train_loader, desc="Entraînement") as loop:
             outputs_list, labels_list, genders_list = [], [], []
             for i, (images, labels, genders) in enumerate(loop):
-                images, labels, genders = images.to(DEVICE, non_blocking=True), labels.to(DEVICE, non_blocking=True), genders.to(DEVICE, non_blocking=True)
+                # images, labels, genders = images.to(DEVICE, non_blocking=True), labels.to(DEVICE, non_blocking=True), genders.to(DEVICE, non_blocking=True)
+                images = images.to(DEVICE, non_blocking=True)
+                labels = labels.to(DEVICE, dtype=torch.float32, non_blocking=True)
+                genders = genders.to(DEVICE, dtype=torch.float32, non_blocking=True)
                 if gpu_train_transforms:
                     images = gpu_train_transforms(images)
                 outputs = model(images)
@@ -72,6 +74,8 @@ def train(model, model_retrieve_path, train_loader, val_loader, max_epochs, epoc
                     total_train += labels.size(0)
                     loop.set_postfix(loss=running_loss/total_train)
 
+                    torch.nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0)
+
                     optimizer.step()
                     optimizer.zero_grad()
                     outputs_list.clear()
@@ -83,7 +87,9 @@ def train(model, model_retrieve_path, train_loader, val_loader, max_epochs, epoc
             with tqdm(val_loader, desc="Validation") as val_bar:
                 outputs_list, labels_list, genders_list = [], [], []
                 for i, (images, labels, genders) in enumerate(val_bar):
-                    images, labels, genders = images.to(DEVICE, non_blocking=True), labels.to(DEVICE, non_blocking=True), genders.to(DEVICE, non_blocking=True)
+                    images = images.to(DEVICE, non_blocking=True)
+                    labels = labels.to(DEVICE, dtype=torch.float32, non_blocking=True)
+                    genders = genders.to(DEVICE, dtype=torch.float32, non_blocking=True)
                     if gpu_val_transforms:
                         images = gpu_val_transforms(images)
                     outputs = model(images)
