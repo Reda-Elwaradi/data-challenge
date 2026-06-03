@@ -1,6 +1,7 @@
 __pycache__/
 .venv/
 .vscode/
+*.tar
 images/*
 saved_models/*
 saved_evals/*
