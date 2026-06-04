@@ -4,7 +4,7 @@ from tqdm import tqdm
 import torch
 from config import *
 from data import get_test_loader
-from model import Modele
+from model import get_model
 
 def evaluate_and_map(model, test_loader, save_path, gpu_test_transforms):
     model.eval()
@@ -28,9 +28,9 @@ def evaluate_and_map(model, test_loader, save_path, gpu_test_transforms):
     df.to_csv(path, index=False)
     return
 
-def main(model_save_path, trial=False):
+def main(model_name=MODEL_NAME, model_save_path=MODEL_SAVE_PATH, trial=False):
     test_loader, t_trans = get_test_loader()
-    MODEL = Modele(model_save_path, 0, True)
+    MODEL = get_model(model_name, model_save_path, 0, True)
     MODEL.to(DEVICE, non_blocking=True)
     if ON_GPU_TRANSFORM:
         t_trans = t_trans.to(DEVICE, non_blocking=True)

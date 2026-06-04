@@ -3,6 +3,7 @@ from functools import partial
 
 CSV_PATH = 'occlusion_datasets/train_clean.csv'
 BASE_TEST_CSV_PATH = 'test_predictions.csv'
+MODEL_NAME = 'efficientnet_b0'
 DROPOUT_RATE = 0.2
 
 DEVICE = torch.device('cuda' if torch.cuda.is_available() else 'cpu')

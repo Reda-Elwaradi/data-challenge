@@ -15,23 +15,29 @@ def get_reduce_on_plateau_scheduler():
 
 experiments = [
     {
-        "model_save_path": "saved_models/essai1.pth"
+        "model_save_path": "saved_models/resnet1.pth"
     },
     {
-        "model_save_path": "saved_models/essai2.pth",
+        "model_save_path": "saved_models/resnet2.pth",
         "differential_lr": 0.5,
-        "unfreeze_blocks": 8,
+        "unfreeze_blocks": 4,
     },
     {
-        "model_save_path": "saved_models/essai4.pth",
+        "model_save_path": "saved_models/resnet3.pth",
         "differential_lr": 0.5,
         "lr": 1e-3,
     },
     {
-        "model_save_path": "saved_models/essai3.pth",
+        "model_save_path": "saved_models/resnet4.pth",
         "lr": 1e-3,
-        "unfreeze_blocks": 2,
+        "unfreeze_blocks": 1,
         "differential_lr": 1,
+    },
+    {
+        "model_save_path": "saved_models/resnet5.pth",
+        "differential_lr": 0.5,
+        "unfreeze_blocks": 4,
+        "lr": 1e-3,
     },
 ]
 

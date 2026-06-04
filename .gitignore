@@ -6,4 +6,5 @@ images/*
 saved_models/*
 saved_evals/*
 runs/*
+logs/*
 config.py

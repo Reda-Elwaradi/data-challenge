@@ -6,7 +6,7 @@ from config import *
 from data import get_train_val_loaders
 import torch.optim as optim
 from torch.utils.tensorboard import SummaryWriter
-from model import Modele, IdemiaLoss
+from model import get_model, IdemiaLoss
 
 def train(model, model_retrieve_path, train_loader, val_loader, max_epochs, epoch_start, early_stopping_patience, total_batch_size, lr, weight_decay, differential_lr, save_path, unfreeze_blocks, unfreeze_epoch, scheduler_fn, gpu_train_transforms, gpu_val_transforms, trial):
     accumulation_steps = total_batch_size // BATCH_SIZE
@@ -163,9 +163,9 @@ def train(model, model_retrieve_path, train_loader, val_loader, max_epochs, epoc
         writer.close()
     return best_epoch, best_val_loss
 
-def main(model_retrieve_path=MODEL_RETRIEVE_PATH, dropout_rate=DROPOUT_RATE, max_epochs=MAX_EPOCHS, epoch_start=EPOCH_START, early_stopping_patience=EARLY_STOPPING_PATIENCE, total_batch_size=TOTAL_BATCH_SIZE, lr=LR, weight_decay=WEIGHT_DECAY, differential_lr=DIFFERENTIAL_LR, model_save_path=MODEL_SAVE_PATH, unfreeze_blocks=UNFREEZE_BLOCKS, unfreeze_epoch=UNFREEZE_EPOCH, scheduler_fn=SCHEDULER_FN, image_perturbations=IMAGE_PERTURBATIONS, trial=None):
+def main(model_name=MODEL_NAME, model_retrieve_path=MODEL_RETRIEVE_PATH, dropout_rate=DROPOUT_RATE, max_epochs=MAX_EPOCHS, epoch_start=EPOCH_START, early_stopping_patience=EARLY_STOPPING_PATIENCE, total_batch_size=TOTAL_BATCH_SIZE, lr=LR, weight_decay=WEIGHT_DECAY, differential_lr=DIFFERENTIAL_LR, model_save_path=MODEL_SAVE_PATH, unfreeze_blocks=UNFREEZE_BLOCKS, unfreeze_epoch=UNFREEZE_EPOCH, scheduler_fn=SCHEDULER_FN, image_perturbations=IMAGE_PERTURBATIONS, trial=None):
     train_loader, val_loader, t_trans, v_trans = get_train_val_loaders(image_perturbations)
-    MODEL = Modele(model_retrieve_path, dropout_rate, unfreeze_epoch is not None)
+    MODEL = get_model(model_name, model_retrieve_path, dropout_rate, unfreeze_epoch is not None)
     MODEL.to(DEVICE, non_blocking=True)
     if ON_GPU_TRANSFORM:
         t_trans = t_trans.to(DEVICE, non_blocking=True)
