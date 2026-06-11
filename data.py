@@ -10,6 +10,7 @@ from config import *
 def get_transforms(image_perturbations=IMAGE_PERTURBATIONS):
     cpus_transforms = {
         "train": transforms.Compose([
+            transforms.RandomHorizontalFlip(p=0.5),
             # 1. RandomApply : % de chance de modifier les couleurs/lumières
             transforms.RandomApply([transforms.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.3, hue=0.05)], p=image_perturbations[0]),
             # 2. RandomApply : % de chance d'appliquer une légère rotation
@@ -31,6 +32,7 @@ def get_transforms(image_perturbations=IMAGE_PERTURBATIONS):
     gpu_transforms = {
         "train": v2.Compose([
             v2.ToDtype(torch.float32, scale=True),
+            v2.RandomHorizontalFlip(p=0.5), # 50% de chance d'inverser l'image
             v2.RandomApply([v2.ColorJitter(brightness=0.3, contrast=0.3, saturation=0.3, hue=0.05)], p=image_perturbations[0]),
             v2.RandomApply([v2.RandomRotation(degrees=10, interpolation=transforms.InterpolationMode.BILINEAR)], p=image_perturbations[1]),
             v2.RandomApply([v2.GaussianBlur(kernel_size=9, sigma=(0.1, 2.0))], p=image_perturbations[2]),

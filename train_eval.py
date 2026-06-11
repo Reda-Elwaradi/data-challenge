@@ -12,14 +12,15 @@ def train(model, model_retrieve_path, train_loader, val_loader, max_epochs, epoc
     accumulation_steps = total_batch_size // BATCH_SIZE
     criterion = IdemiaLoss()
     if differential_lr is not None:
-        fc_params = list(model.fc.parameters())
+        fc_params = list(model.fc.parameters()) # Ça marchera pour TOUS les modèles maintenant !
         base_params = [p for n, p in model.named_parameters() if not n.startswith('fc')]
-        optimizer = optim.Adam([
+        # On utilise AdamW !
+        optimizer = optim.AdamW([
             {'params': base_params, 'lr': lr * differential_lr}, 
             {'params': fc_params, 'lr': lr}
         ], weight_decay=weight_decay)
     else:
-        optimizer = optim.Adam(model.parameters(), lr=lr, weight_decay=weight_decay)
+        optimizer = optim.AdamW(model.parameters(), lr=lr, weight_decay=weight_decay)
     scheduler = scheduler_fn(optimizer)
     unfreezed = False
     if trial is None:

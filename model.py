@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from torchvision.models import resnet50, ResNet50_Weights, efficientnet_b0, EfficientNet_B0_Weights, resnet18, ResNet18_Weights, convnext_small, ConvNeXt_Small_Weights
+from torchvision.models import resnet50, ResNet50_Weights, efficientnet_b0, EfficientNet_B0_Weights, resnet18, ResNet18_Weights, convnext_small, ConvNeXt_Small_Weights, swin_t, Swin_T_Weights
 
 class IdemiaLoss(nn.Module):
     def __init__(self):
@@ -157,6 +157,44 @@ class ConvNext(nn.Module):
             for param in self.backbone.features[idx].parameters():
                 param.requires_grad = True
 
+class SwinTinyModel(nn.Module):
+    def __init__(self, pretrained, do, freeze):
+        super().__init__()
+
+        self.backbone = swin_t(weights=Swin_T_Weights.DEFAULT if pretrained is None else None)
+        self.feature_dim = self.backbone.head.in_features
+        self.max_blocks = len(self.backbone.features) 
+
+        # 1. On neutralise la FC native du Swin (Méthode Motiver7)
+        self.backbone.head = nn.Identity()
+
+        # 2. Congélation
+        if freeze:
+            for param in self.backbone.parameters():
+                param.requires_grad = False
+                
+        # 3. On crée notre tête standardisée dans "self.fc"
+        self.fc = nn.Sequential(
+            nn.Dropout(do),
+            nn.Linear(self.feature_dim, 1)
+        )
+
+    def forward(self, x):
+        # Le forward respecte la norme du reste du fichier
+        features = self.backbone(x)
+        logits = self.fc(features)
+        
+        out = torch.sigmoid(logits)
+        out = torch.clamp(out, min=1e-6, max=1.0 - 1e-6)
+        return out
+    
+    def unfreeze_blocks(self, num_blocks):
+        num_blocks = min(num_blocks, self.max_blocks)
+        start_idx = self.max_blocks - num_blocks
+        for idx in range(start_idx, self.max_blocks):
+            for param in self.backbone.features[idx].parameters():
+                param.requires_grad = True
+
 def get_model(model_name, pretrained, do, freeze):
     if model_name == 'efficientnet_b0':
         model = EfficientNetModel(pretrained, do, freeze)
@@ -166,6 +204,8 @@ def get_model(model_name, pretrained, do, freeze):
         model = ResNet50Model(pretrained, do, freeze)
     elif model_name == 'convnext':
         model = ConvNext(pretrained, do, freeze)
+    elif model_name == 'swin_t':
+        model = SwinTinyModel(pretrained, do, freeze)
     else:
         raise ValueError(f"Model {model_name} non reconnu. Choisissez 'efficientnet_b0', 'resnet18', 'resnet50' ou 'convnext'.")
     if pretrained is not None:
