@@ -131,7 +131,7 @@ class ConvNext(nn.Module):
 
         self.backbone = convnext_small(weights=ConvNeXt_Small_Weights.DEFAULT if pretrained is None else None)
         self.feature_dim = self.backbone.classifier[2].in_features
-        self.backbone.classifier = nn.Identity()
+        self.backbone.classifier[2] = nn.Identity()
         self.max_blocks = 8
 
         if freeze:
